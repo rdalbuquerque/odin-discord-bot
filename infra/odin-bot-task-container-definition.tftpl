@@ -1,0 +1,22 @@
+[
+  {
+      "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+              "awslogs-group": "discord-bot",
+              "awslogs-region": "${aws_region}",
+              "awslogs-create-group": "true",
+              "awslogs-stream-prefix": "odin"
+          }
+      },
+      "essential": true,
+      "name": "odin-bot",
+      "image": "rodalbuquerque/odin-discord-bot:latest",
+      "environment": [
+        {"name": "VALHEIM_EC2_CLUSTER", "value": "${valheim_ec2_cluster}"},
+        {"name": "ODIN_BOT_TOKEN", "value": "${odin_bot_token}"},
+        {"name": "AWS_ACCESS_KEY_ID", "value": "${aws_access_key_id}"},
+        {"name": "AWS_SECRET_ACCESS_KEY", "value": "${aws_secret_access_key}"}
+      ]
+  }
+]

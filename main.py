@@ -6,11 +6,24 @@ import os
 valheim = server.Valheim(cluster=os.getenv('VALHEIM_EC2_CLUSTER'))
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
+intents.presences = True
 discclient = discord.Client(intents=intents)
+
+help_msg = "- *server start*: start Valheim server, reporting every status change until it's up and running\n- *server status*: get Valheim server status\n- *server stop*: stop Valheim server\nOBS: I'll only answer if you mention me with @Odin"
 
 @discclient.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(discclient))
+
+@discclient.event
+async def on_presence_update(before, after):
+    print(f'presence before: {before}: {before.status.value}')
+    print(f'presence after: {after}: {after.status.value}')
+    if before.status.value == 'offline':
+        for guild in discclient.guilds:
+            channel = guild.system_channel #getting system channel
+            await channel.send(f"Greetings {after.mention}!\n{help_msg}")
 
 @discclient.event
 async def on_message(message):
@@ -19,7 +32,10 @@ async def on_message(message):
 
     if len(message.mentions) > 0:
         if message.mentions[0].id == discclient.user.id:
-            if 'server start' in message.content:
+            if 'help' in message.content:
+                await message.channel.send(help_msg)
+
+            elif 'server start' in message.content:
                 server_loaded = False
                 task = valheim.task_status()
                 cur_task_status = task[0]
