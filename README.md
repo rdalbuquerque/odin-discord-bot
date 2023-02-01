@@ -12,7 +12,8 @@ The bot runs on an ECS container using Fargate spot capacity provider. The Terra
 Since this bot is a long running Discord client and not a Lambda function we could have features like:
 - cheking who is online
 - usage report
-- live billing calculations\
+- live billing calculations
+
 One other important capability would be to manage multiple Valheim servers for multiple Discord servers
 
 
