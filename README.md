@@ -2,7 +2,7 @@
 Discord bot to manage this [Valheim server](https://github.com/rdalbuquerque/valheim-server-asg-ec2)
 
 # goal
-The goal of this Discord bot is to manage Valheim server state. By mentioning the bot with messages *server start*, *server status*, and *server stop*, the Discord user
+The goal of this Discord bot is to manage Valheim server state. By mentioning the bot with messages *server start*, *server stop*, and *server status*, the Discord user
 can easily start, stop or check Valheim server state.
 
 # infra
