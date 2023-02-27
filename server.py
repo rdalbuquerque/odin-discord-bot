@@ -2,6 +2,7 @@ import boto3
 import botocore.exceptions as awserr
 import re
 import asyncio
+import paramiko
 
 class Valheim:
     region = 'sa-east-1'
@@ -89,4 +90,61 @@ class Valheim:
             return True
         else:
             return False
+
+    def get_ecs_instance_public_ip(self):
+        try:
+            instance_arn = self.ecs_client.list_container_instances(
+                cluster=self.cluster,
+                maxResults=1
+            )['containerInstanceArns'][0]
+            ec2_instance_id = self.ecs_client.describe_container_instances(
+                cluster=self.cluster,
+                containerInstances=[instance_arn]
+            )['containerInstances'][0]['ec2InstanceId']
+            ec2 = boto3.client('ec2', region_name=self.region)
+            ec2_public_ip = ec2.describe_instances(
+                InstanceIds=[ec2_instance_id]
+            )['Reservations'][0]['Instances'][0]['PublicIpAddress']
+            return ec2_public_ip
+        except Exception as e:
+            return e
+
+    def new_ssh_client(self):
+        try:
+            ec2_public_ip = self.get_ecs_instance_public_ip()
+            key = paramiko.RSAKey.from_private_key_file('valheim-sa.pem')
+            client = paramiko.SSHClient()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            print(f'connecting to instance {ec2_public_ip}')
+            client.connect(hostname=ec2_public_ip, username='ec2-user', pkey=key)
+            return client 
+        except Exception as e:
+            return e
+
+
+    def exec_in_container(self, cmd):
+        try:
+            client = self.new_ssh_client()
+            _, stdout, _ = client.exec_command("printf $(docker ps -aqf 'name=valheim')")
+            valheim_container_id = stdout.read().decode()
+            describe_valheim_fs_cmd = f"docker exec -it {valheim_container_id} {cmd}"
+            print(f'executing command: "{describe_valheim_fs_cmd}"')
+            _, stdout, _ = client.exec_command(f"exec {describe_valheim_fs_cmd}", get_pty=True)
+            result = stdout.read().decode()
+            client.close()
+            return result
+        except Exception as e:
+            print(e)
+            client.close()
+            return e
+
+    def get_volume_details(self):
+        try:
+            valheim_container_dfh = self.exec_in_container('df -h --output=pcent,target')
+            return valheim_container_dfh
+        except Exception as e:
+            print(e)
+            return e
+
+
 

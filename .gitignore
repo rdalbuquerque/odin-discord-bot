@@ -132,3 +132,4 @@ dmypy.json
 **/*.tfvars
 
 **/.infracost
+**/*.pem

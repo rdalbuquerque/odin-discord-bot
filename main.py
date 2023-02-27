@@ -4,6 +4,7 @@ import asyncio
 import os
 
 valheim = server.Valheim(cluster=os.getenv('VALHEIM_EC2_CLUSTER'))
+valheim_pwd = server.Valheim(cluster=os.getenv('VALHEIM_PWD'))
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
@@ -17,15 +18,6 @@ async def on_ready():
     print('We have logged in as {0.user}'.format(discclient))
 
 @discclient.event
-async def on_presence_update(before, after):
-    print(f'presence before: {before}: {before.status.value}')
-    print(f'presence after: {after}: {after.status.value}')
-    if before.status.value == 'offline':
-        for guild in discclient.guilds:
-            channel = guild.system_channel #getting system channel
-            await channel.send(f"Greetings {after.mention}!\n{help_msg}")
-
-@discclient.event
 async def on_message(message):
     if message.author == discclient.user:
         return
@@ -34,6 +26,14 @@ async def on_message(message):
         if message.mentions[0].id == discclient.user.id:
             if 'help' in message.content:
                 await message.channel.send(help_msg)
+
+            if 'password' in message.content:
+                await message.channel.send(valheim_pwd)
+
+            elif 'storage status' in message.content:
+                v = valheim.get_volume_details()
+                print(v)
+                await message.channel.send(v)
 
             elif 'server start' in message.content:
                 server_loaded = False
