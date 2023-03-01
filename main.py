@@ -4,7 +4,7 @@ import asyncio
 import os
 
 valheim = server.Valheim(cluster=os.getenv('VALHEIM_EC2_CLUSTER'))
-valheim_pwd = server.Valheim(cluster=os.getenv('VALHEIM_PWD'))
+valheim_pwd = os.getenv('VALHEIM_PWD')
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
@@ -89,4 +89,5 @@ async def on_message(message):
                 print(message.content)
                 await message.channel.send(f"I don't know what this is, I know 'server status', 'server start' and 'server stop'")
 
+# discclient.loop.create_task(valheim.manage_valheim_volume())
 discclient.run(os.getenv('ODIN_BOT_TOKEN'))

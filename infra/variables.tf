@@ -13,6 +13,11 @@ variable "odin_bot_token" {
   type      = string
 }
 
+variable "ssh_key" {
+  sensitive = true
+  type      = string
+}
+
 variable "valheim_ec2_cluster" {
   type = string
 }

@@ -3,6 +3,9 @@ import botocore.exceptions as awserr
 import re
 import asyncio
 import paramiko
+import base64
+import os
+import io
 
 class Valheim:
     region = 'sa-east-1'
@@ -110,21 +113,24 @@ class Valheim:
             return e
 
     def new_ssh_client(self):
-        try:
-            ec2_public_ip = self.get_ecs_instance_public_ip()
-            key = paramiko.RSAKey.from_private_key_file('valheim-sa.pem')
-            client = paramiko.SSHClient()
-            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            print(f'connecting to instance {ec2_public_ip}')
-            client.connect(hostname=ec2_public_ip, username='ec2-user', pkey=key)
-            return client 
-        except Exception as e:
-            return e
+        ec2_public_ip = self.get_ecs_instance_public_ip()
+        ssh_key = base64.b64decode(os.environ['SSH_KEY']).decode('utf-8')
+        key_file_obj = io.StringIO(ssh_key)
+        pem_key = paramiko.RSAKey.from_private_key(key_file_obj)
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        print(f'connecting to instance {ec2_public_ip}')
+        client.connect(hostname=ec2_public_ip, username='ec2-user', pkey=pem_key)
+        return client 
 
 
     def exec_in_container(self, cmd):
         try:
             client = self.new_ssh_client()
+        except Exception as e:
+            print(e)
+            return e
+        try:
             _, stdout, _ = client.exec_command("printf $(docker ps -aqf 'name=valheim')")
             valheim_container_id = stdout.read().decode()
             describe_valheim_fs_cmd = f"docker exec -it {valheim_container_id} {cmd}"
@@ -145,6 +151,3 @@ class Valheim:
         except Exception as e:
             print(e)
             return e
-
-
-

@@ -133,3 +133,5 @@ dmypy.json
 
 **/.infracost
 **/*.pem
+.vscode
+*key*

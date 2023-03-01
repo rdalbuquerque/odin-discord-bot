@@ -10,6 +10,7 @@ locals {
     odin_bot_token        = var.odin_bot_token
     aws_access_key_id     = var.aws_access_key_id
     aws_secret_access_key = var.aws_secret_access_key
+    ssh_key               = var.ssh_key
   })
 }
 
@@ -65,6 +66,10 @@ module "ecs" {
   source = "terraform-aws-modules/ecs/aws"
 
   cluster_name = "discord-bot"
+  cluster_settings = {
+    "name"  = "containerInsights"
+    "value" = "disabled"
+  }
 
   fargate_capacity_providers = {
     FARGATE_SPOT = {
