@@ -102,3 +102,11 @@ resource "aws_ecs_service" "odin_bot" {
     assign_public_ip = true
   }
 }
+
+resource "aws_s3_bucket" "backup" {
+  bucket = "valheim-backup-rda"
+
+  tags = {
+    Name        = "valheim-backup"
+  }
+}

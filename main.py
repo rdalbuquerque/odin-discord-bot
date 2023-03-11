@@ -1,20 +1,21 @@
 import discord
+from discord.ext import tasks
 import server
 import asyncio
 import os
 
-valheim = server.Valheim(cluster=os.getenv('VALHEIM_EC2_CLUSTER'))
-valheim_pwd = os.getenv('VALHEIM_PWD')
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 intents.presences = True
 discclient = discord.Client(intents=intents)
 
+valheim = server.Valheim(cluster=os.getenv('VALHEIM_EC2_CLUSTER'))
 help_msg = "- *server start*: start Valheim server, reporting every status change until it's up and running\n- *server status*: get Valheim server status\n- *server stop*: stop Valheim server\nOBS: I'll only answer if you mention me with @Odin"
 
 @discclient.event
 async def on_ready():
+    # check_storage_loop.start()
     print('We have logged in as {0.user}'.format(discclient))
 
 @discclient.event
@@ -27,15 +28,13 @@ async def on_message(message):
             if 'help' in message.content:
                 await message.channel.send(help_msg)
 
-            if 'password' in message.content:
-                await message.channel.send(valheim_pwd)
-
             elif 'storage status' in message.content:
-                v = valheim.get_volume_details()
+                v = valheim.get_storage_details()
                 print(v)
                 await message.channel.send(v)
 
             elif 'server start' in message.content:
+                valheim.guild = message.guild
                 server_loaded = False
                 task = valheim.task_status()
                 cur_task_status = task[0]
@@ -84,10 +83,26 @@ async def on_message(message):
                     await message.channel.send("Server is up and running, enjoy!")
                 else:
                     await message.channel.send(f"Server is {valheim.status().lower()}")
+
+            elif 'server backup' in message.content:
+                valheim.make_valheim_bkp()
             
             else:
                 print(message.content)
                 await message.channel.send(f"I don't know what this is, I know 'server status', 'server start' and 'server stop'")
 
-# discclient.loop.create_task(valheim.manage_valheim_volume())
-discclient.run(os.getenv('ODIN_BOT_TOKEN'))
+@tasks.loop(seconds=30)
+async def check_storage_loop():
+    print('starting check_storage_loop')
+    known_file_count = valheim.num_files
+    cur_file_count = valheim.get_worlds_local_file_count()
+    if cur_file_count != known_file_count:
+        if valheim.guild:
+            channel = valheim.guild.system_channel #getting system channel
+            await channel.send(f"Count of files in worlds_local changed, count is now {cur_file_count}")
+
+async def main():
+    await discclient.start(os.getenv('ODIN_BOT_TOKEN'))
+
+if __name__ == '__main__':
+    asyncio.run(main())
