@@ -1,7 +1,7 @@
 import boto3
 from botocore.exceptions import ClientError
 
-class S3Storage():
+class S3():
     region = 'us-east-1'
     def __init__(self, bucket):
         self.bucket = bucket

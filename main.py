@@ -39,12 +39,12 @@ async def on_message(message):
                 task = valheim.task_status()
                 cur_task_status = task[0]
                 print(f"current task status is: {cur_task_status}")
-                if cur_task_status != 'STOPPED':
-                    if valheim.gameserver_status(task[1]) == 'LOADED':
-                        await message.channel.send("Server already up and running, enjoy!")
-                        server_loaded = True
+                if valheim.status == 'LOADED':
+                    await message.channel.send("Server already up and running, enjoy!")
+                    server_loaded = True
 
                 if not server_loaded:
+                    valheim.status = 'STARTING'
                     await message.channel.send("Server is starting, I'll send updates on every status change")
                     async with message.channel.typing():
                         await valheim.start()
@@ -63,6 +63,7 @@ async def on_message(message):
                         last_task_status = cur_task_status
 
                     await message.channel.send(f"Server is running, now loading world, I'll let you know when it's loaded")
+                    valheim.status = 'LOADING'
                     cur_gameserver_status = valheim.gameserver_status(task[1])
                     print(f"current gameserver status is: {cur_gameserver_status}")
                     async with message.channel.typing():
@@ -72,20 +73,21 @@ async def on_message(message):
                             await asyncio.sleep(2)
 
                     await message.channel.send("Server is up and running, enjoy!")
+                    valheim.status = 'LOADED'
                     server_loaded = True
 
             elif 'server stop' in message.content:
+                await message.channel.send("Running back up before shut down...")
+                await discclient.loop.run_in_executor(None, valheim.make_valheim_bkp)
                 valheim.stop()
                 await message.channel.send("server down, hope you had a great time!")
 
             elif 'server status' in message.content:
-                if valheim.status() == 'LOADED':
-                    await message.channel.send("Server is up and running, enjoy!")
-                else:
-                    await message.channel.send(f"Server is {valheim.status().lower()}")
+                server_status = valheim.status
+                await message.channel.send(f"Server is {server_status}")
 
             elif 'server backup' in message.content:
-                valheim.make_valheim_bkp()
+                await discclient.loop.run_in_executor(None, valheim.make_valheim_bkp)
             
             else:
                 print(message.content)
