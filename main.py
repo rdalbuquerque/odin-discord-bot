@@ -15,7 +15,7 @@ help_msg = "- *server start*: start Valheim server, reporting every status chang
 
 @discclient.event
 async def on_ready():
-    # check_storage_loop.start()
+    make_backup_loop.start()
     print('We have logged in as {0.user}'.format(discclient))
 
 @discclient.event
@@ -96,8 +96,10 @@ async def on_message(message):
 @tasks.loop(seconds=3*60)
 async def make_backup_loop():
     print('starting make_backup_loop')
+    print('evaluating valheim.status...')
     if valheim.status == 'LOADED':
         valheim.make_valheim_bkp()
+    print(f'backup skipped because valheim.status is {valheim.status}')
 
 
 async def main():
