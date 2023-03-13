@@ -80,11 +80,11 @@ async def on_message(message):
                 await message.channel.send("Running back up before shut down...")
                 await discclient.loop.run_in_executor(None, valheim.make_valheim_bkp)
                 valheim.stop()
+                valheim.status = 'STOPPED'
                 await message.channel.send("server down, hope you had a great time!")
 
             elif 'server status' in message.content:
-                server_status = valheim.status
-                await message.channel.send(f"Server is {server_status}")
+                await message.channel.send(f"Server is {valheim.status}")
 
             elif 'server backup' in message.content:
                 await discclient.loop.run_in_executor(None, valheim.make_valheim_bkp)
@@ -93,15 +93,12 @@ async def on_message(message):
                 print(message.content)
                 await message.channel.send(f"I don't know what this is, I know 'server status', 'server start' and 'server stop'")
 
-@tasks.loop(seconds=30)
-async def check_storage_loop():
-    print('starting check_storage_loop')
-    known_file_count = valheim.num_files
-    cur_file_count = valheim.get_worlds_local_file_count()
-    if cur_file_count != known_file_count:
-        if valheim.guild:
-            channel = valheim.guild.system_channel #getting system channel
-            await channel.send(f"Count of files in worlds_local changed, count is now {cur_file_count}")
+@tasks.loop(seconds=3*60)
+async def make_backup_loop():
+    print('starting make_backup_loop')
+    if valheim.status == 'LOADED':
+        valheim.make_valheim_bkp()
+
 
 async def main():
     await discclient.start(os.getenv('ODIN_BOT_TOKEN'))
