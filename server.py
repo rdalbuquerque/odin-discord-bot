@@ -8,8 +8,6 @@ import container.container as valheim_container
 import datetime
 
 class Valheim:
-    # Possible status: STOPPED, STARTING, LOADING, LOADED
-    status = 'STOPPED'
     region = 'sa-east-1'
     asg_name = 'valheim-ec2-cluster'
     ecs_service_name = 'valheim'
@@ -24,6 +22,7 @@ class Valheim:
         self.ecs_client = boto3.client("ecs", region_name=self.region)
         self.logs_client = boto3.client("logs", region_name=self.region)
         self.valheim_container = valheim_container.Container(cluster=cluster)
+        self.set_status()
 
     def task_status(self):
         tasks = self.ecs_client.list_tasks(cluster=self.cluster)
@@ -54,16 +53,16 @@ class Valheim:
                 break
         return status
 
-    def status(self):
+    def set_status(self):
         # Possible status: LOADED, LOADING, RUNNING, PENDING, STOPPED
         task = self.task_status()
         if task[0] == 'RUNNING':
             if self.gameserver_status(task[1]) != 'LOADED':
-                return 'LOADING'
+                self.status = 'LOADING'
             else:
-                return 'LOADED'
+                self.status = 'LOADED'
         else:
-            return task[0]
+            self.status = task[0]
 
 
     async def start(self):
