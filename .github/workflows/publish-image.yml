@@ -23,4 +23,3 @@ jobs:
       uses: docker/build-push-action@v4.0.0
       with:
         push: true
-        tags: rodalbuquerque/odin-discord-bot:latest
