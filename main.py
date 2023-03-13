@@ -93,13 +93,14 @@ async def on_message(message):
                 print(message.content)
                 await message.channel.send(f"I don't know what this is, I know 'server status', 'server start' and 'server stop'")
 
-@tasks.loop(seconds=3*60)
+@tasks.loop(seconds=30*60)
 async def make_backup_loop():
     print('starting make_backup_loop')
     print('evaluating valheim.status...')
     if valheim.status == 'LOADED':
         valheim.make_valheim_bkp()
-    print(f'backup skipped because valheim.status is {valheim.status}')
+    else:
+        print(f'backup skipped because valheim.status is {valheim.status}')
 
 
 async def main():
