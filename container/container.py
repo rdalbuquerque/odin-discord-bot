@@ -67,7 +67,6 @@ class Container():
         return self.exec_in_container(f'ls -l {self.world_saves_location} | wc -l')
 
     def compress_files(self, bkp_file_name):
-        self.exec_in_container(cmd=f'sh -c "ls -t | tail -n +13 | xargs rm"', path=self.world_saves_location)
         self.exec_in_container(cmd=f'sh -c "tar -zcvf {bkp_file_name} ."', path=self.world_saves_location)
 
     def copy_bkp_from_container_to_ecs_agent(self, bkp_file_name):
@@ -93,3 +92,6 @@ class Container():
         except Exception as e:
             print(e)
         ftp_client.close()
+    
+    def delete_saves(self, num_files_to_keep):
+        self.exec_in_container(cmd=f'sh -c "ls -t | tail -n +{num_files_to_keep+1} | xargs rm"', path=self.world_saves_location)

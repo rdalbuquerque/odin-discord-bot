@@ -77,11 +77,16 @@ async def on_message(message):
                     server_loaded = True
 
             elif 'server stop' in message.content:
-                await message.channel.send("Making backup before shutdown...")
-                await discclient.loop.run_in_executor(None, valheim.make_valheim_bkp)
-                valheim.stop()
-                valheim.status = 'STOPPED'
-                await message.channel.send("server down, hope you had a great time!")
+                if valheim.status != 'STOPPED':
+                    if valheim.status == 'LOADED':
+                        await message.channel.send("Making backup before shutdown...")
+                        await discclient.loop.run_in_executor(None, valheim.make_valheim_bkp)
+                    valheim.stop()
+                    valheim.status = 'STOPPED'
+                    await message.channel.send("server down, hope you had a great time!")
+                else:
+                    await message.channel.send("server is already stopped")
+
 
             elif 'server status' in message.content:
                 await message.channel.send(f"Server is {valheim.status}")
@@ -94,13 +99,13 @@ async def on_message(message):
                 await message.channel.send(f"I don't know what this is, I know 'server status', 'server start' and 'server stop'")
 
 @tasks.loop(seconds=30*60)
-async def make_backup_loop():
-    print('starting make_backup_loop')
+async def cleanup_loop():
+    print('starting cleanup_loop')
     print('evaluating valheim.status...')
     if valheim.status == 'LOADED':
-        valheim.make_valheim_bkp()
+        valheim.cleanup_old_days(4)
     else:
-        print(f'backup skipped because valheim.status is {valheim.status}')
+        print(f'cleanup skipped because valheim.status is {valheim.status}')
 
 
 async def main():

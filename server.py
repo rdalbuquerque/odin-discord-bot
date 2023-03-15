@@ -127,3 +127,7 @@ class Valheim:
         response = s3_storage.put(key=bkp_file_name, data=file_contents)
         print(response)
 
+    def cleanup_old_days(self, num_days_to_keep):
+        num_files_to_keep = num_days_to_keep*2+4
+        print(f'keeping {num_files_to_keep} files')
+        self.valheim_container.delete_saves(num_files_to_keep)
