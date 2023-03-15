@@ -15,7 +15,7 @@ help_msg = "- *server start*: start Valheim server, reporting every status chang
 
 @discclient.event
 async def on_ready():
-    make_backup_loop.start()
+    cleanup_loop.start()
     print('We have logged in as {0.user}'.format(discclient))
 
 @discclient.event

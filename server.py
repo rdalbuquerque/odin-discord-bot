@@ -81,6 +81,7 @@ class Valheim:
         )
 
     def stop(self):
+        self.valheim_container.exec_in_container(cmd='odin stop', path='/home/steam/valheim')
         self.ecs_client.update_service(
             cluster=self.cluster,
             service=self.ecs_service_name,
