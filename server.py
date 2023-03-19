@@ -109,7 +109,7 @@ class Valheim:
             return e
 
     def stop_valheim_process(self):
-        self.valheim_container.exec_in_container(cmd='odin stop', path='/home/steam/valheim')
+        self.valheim_container.exec_in_container(cmd='odin stop &', path='/home/steam/valheim')
 
     def make_valheim_bkp(self):
         now = datetime.datetime.now()

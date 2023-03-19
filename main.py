@@ -79,12 +79,11 @@ async def on_message(message):
             elif 'server stop' in message.content:
                 if valheim.status != 'STOPPED':
                     valheim.stop_valheim_process()
-                    await message.channel.send("Making backup before shutdown...")
                     if valheim.status == 'LOADED':
                         await message.channel.send("Making backup before shutdown...")
                         async with message.channel.typing():
-                            await discclient.loop.run_in_executor(None, valheim.make_valheim_bkp)
-                            valheim.remove_infra()
+                                await discclient.loop.run_in_executor(None, valheim.make_valheim_bkp)
+                    valheim.remove_infra()
                     valheim.status = 'STOPPED'
                     await message.channel.send("server down, hope you had a great time!")
                 else:
