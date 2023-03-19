@@ -80,8 +80,7 @@ class Valheim:
             desiredCount=1
         )
 
-    def stop(self):
-        self.valheim_container.exec_in_container(cmd='odin stop', path='/home/steam/valheim')
+    def remove_infra(self):
         self.ecs_client.update_service(
             cluster=self.cluster,
             service=self.ecs_service_name,
@@ -108,6 +107,9 @@ class Valheim:
         except Exception as e:
             print(e)
             return e
+
+    def stop_valheim_process(self):
+        self.valheim_container.exec_in_container(cmd='odin stop', path='/home/steam/valheim')
 
     def make_valheim_bkp(self):
         now = datetime.datetime.now()
