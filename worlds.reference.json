@@ -1,0 +1,10 @@
+{
+    "<discord_guild_1>": {
+        "worldname": "<guild_1_worldname>",
+        "clustername": "<guild_1_clustername>"
+    },
+    "<discord_guild_2>": {
+        "worldname": "<guild_2_worldname>",
+        "clustername": "<guild_2_clustername>"
+    }
+}

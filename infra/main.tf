@@ -85,6 +85,11 @@ module "ecs" {
 }
 
 resource "aws_ecs_service" "odin_bot" {
+  lifecycle {
+    ignore_changes = [
+      task_definition
+    ]
+  }
   name             = "odin-bot"
   cluster          = module.ecs.cluster_id
   task_definition  = aws_ecs_task_definition.odin_bot.arn
@@ -108,5 +113,13 @@ resource "aws_s3_bucket" "backup" {
 
   tags = {
     Name        = "valheim-backup"
+  }
+}
+
+resource "aws_s3_bucket" "worlds_config" {
+  bucket = "valheim-worlds-config"
+
+  tags = {
+    Name        = "valheim-worlds-config"
   }
 }
