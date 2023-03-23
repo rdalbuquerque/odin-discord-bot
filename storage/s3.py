@@ -7,10 +7,10 @@ class S3():
         self.bucket = bucket
         self.s3_client = boto3.client('s3', region_name=self.region)
 
-    def list(self):
+    def get(self,key: str):
         try:
-            contents = self.s3_client.list_objects_v2(Bucket=self.bucket)['contents']
-            return [obj['Key'] for obj in contents] if contents else []
+            s3obj = self.s3_client.get_object(Bucket=self.bucket, Key=key)
+            return s3obj['Body'].read()
         except ClientError as e:
             print(e)
 

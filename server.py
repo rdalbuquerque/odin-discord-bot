@@ -9,11 +9,8 @@ import datetime
 
 class Valheim:
     region = 'sa-east-1'
-    asg_name = 'valheim-ec2-cluster'
     ecs_service_name = 'valheim'
     log_group_name = 'valheim-container'
-    num_files = None
-    guild = None
     world_saves_location = '/home/steam/.config/unity3d/IronGate/Valheim/worlds_local'
 
     def __init__(self, cluster):
@@ -23,6 +20,9 @@ class Valheim:
         self.logs_client = boto3.client("logs", region_name=self.region)
         self.valheim_container = valheim_container.Container(cluster=cluster)
         self.set_status()
+    
+    def set_service_name(self, service_name):
+        self.ecs_service_name = service_name
 
     def task_status(self):
         tasks = self.ecs_client.list_tasks(cluster=self.cluster)
@@ -41,6 +41,7 @@ class Valheim:
             response = self.logs_client.get_log_events(
                 logGroupName=self.log_group_name,
                 logStreamName=log_stream_name,
+                startFromHead=True
             )
         except awserr.ClientError as err:
             if err.response['Error']['Code'] == 'ResourceNotFoundException':
@@ -68,17 +69,20 @@ class Valheim:
     async def start(self):
         self.status = 'STARTING'
         self.asg_client.set_desired_capacity(
-            AutoScalingGroupName=self.asg_name,
+            AutoScalingGroupName=self.cluster,
             DesiredCapacity=1
         )
         while not self.cluster_has_infra():
-            print('scaling asg and associating instance to cluster')
+            print(f'[{self.cluster}] scaling asg and associating instance to cluster')
             await asyncio.sleep(2)
-        self.ecs_client.update_service(
-            cluster=self.cluster,
-            service=self.ecs_service_name,
-            desiredCount=1
-        )
+        try:
+            self.ecs_client.update_service(
+                cluster=self.cluster,
+                service=self.ecs_service_name,
+                desiredCount=1
+            )
+        except Exception as e:
+            print(e)
 
     def remove_infra(self):
         self.ecs_client.update_service(
@@ -87,7 +91,7 @@ class Valheim:
             desiredCount=0
         )
         self.asg_client.set_desired_capacity(
-            AutoScalingGroupName=self.asg_name,
+            AutoScalingGroupName=self.cluster,
             DesiredCapacity=0
         )
 
@@ -114,23 +118,23 @@ class Valheim:
     def make_valheim_bkp(self):
         now = datetime.datetime.now()
         datetime_str = now.strftime("%Y%m%d%H%M%S")
-        world_name = 'platworld'
+        world_name = self.cluster
         bkp_file_name = f'bkp_{world_name}_{datetime_str}.tar.gz'
-        print(f'Generating backup named {bkp_file_name}')
+        print(f'[{self.cluster}] Generating backup named {bkp_file_name}')
         self.valheim_container.compress_files(bkp_file_name)
-        print('Copying from container')
+        print(f'[{self.cluster}] Copying from container')
         self.valheim_container.copy_bkp_from_container_to_ecs_agent(bkp_file_name)
-        print('Copying from ecs agent')
+        print(f'[{self.cluster}] Copying from ecs agent')
         self.valheim_container.copy_bkp_from_ecs_agent(from_path=f'/home/ec2-user/{bkp_file_name}', to_path=bkp_file_name)
         print(os.listdir())
         s3_storage = storage.S3(bucket='valheim-backup-rda')
         with open(bkp_file_name, 'rb') as f:
             file_contents = f.read()
         # Put the file in the S3 bucket
-        response = s3_storage.put(key=bkp_file_name, data=file_contents)
+        response = s3_storage.put(key=f"{self.cluster}/{bkp_file_name}", data=file_contents)
         print(response)
 
     def cleanup_old_days(self, num_days_to_keep):
         num_files_to_keep = num_days_to_keep*2+4
-        print(f'keeping {num_files_to_keep} files')
+        print(f'[{self.cluster}] keeping {num_files_to_keep} files')
         self.valheim_container.delete_saves(num_files_to_keep)
