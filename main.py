@@ -24,6 +24,7 @@ for k, v in worlds_json.items():
 
 @bot.event
 async def on_ready():
+    cleanup_loop.start()
     print('Bot is ready')
 
 @bot.command(name="storage-status", brief="Return storage usage %", help="It runs a df -h inside the container, showing the usage % of every mount")
