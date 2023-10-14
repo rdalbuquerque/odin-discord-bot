@@ -5,6 +5,11 @@ Discord bot to manage this [Valheim server](https://github.com/rdalbuquerque/val
   - [commands](#commands)
   - [infra](#infra)
   - [Registering new servers](#registering-new-servers)
+  - [Example usage](#example-usage)
+    - [start](#start)
+    - [stop](#stop)
+    - [status](#status)
+    - [storage debug](#storage-debug)
 
 
 ## goal
@@ -47,5 +52,16 @@ Where `worldname` will be Valheim's world name, and `clustername` will be ECS cl
 
 To provision a new Valheim server with ECS EC2 Spot capacity provider and EBS go to [this repo](https://github.com/rdalbuquerque/valheim-server-asg-ec2), or, if you prefer an ECS with Fargate and EFS, go to [this other repo](https://github.com/rdalbuquerque/valheim-server-fargate)
 
-
-
+## Example usage
+### start
+> `.o server-start`
+>![server-start](.attachments/server-start.png)
+### stop
+> `.o server-stop`
+>![server-stop](.attachments/server-stop.png)
+### status
+> `.o server-status`
+>![server-stop](.attachments/server-status.png)
+### storage debug
+> `.o storage-status`
+>![storage-status](.attachments/storage-status.png)
