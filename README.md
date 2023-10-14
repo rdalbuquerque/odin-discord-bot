@@ -55,13 +55,13 @@ To provision a new Valheim server with ECS EC2 Spot capacity provider and EBS go
 ## Example usage
 ### start
 > `.o server-start`
->![server-start](.attachments/server-start.png)
+>![server-start](attachments/server-start.png)
 ### stop
 > `.o server-stop`
->![server-stop](.attachments/server-stop.png)
+>![server-stop](attachments/server-stop.png)
 ### status
 > `.o server-status`
->![server-stop](.attachments/server-status.png)
+>![server-stop](attachments/server-status.png)
 ### storage debug
 > `.o storage-status`
->![storage-status](.attachments/storage-status.png)
+>![storage-status](attachments/storage-status.png)
